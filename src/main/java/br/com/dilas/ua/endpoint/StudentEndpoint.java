@@ -1,34 +1,52 @@
 package br.com.dilas.ua.endpoint;
 
+import br.com.dilas.ua.error.CustomErrorType;
 import br.com.dilas.ua.model.Student;
-import br.com.dilas.ua.util.DateTimeUtil;
+import br.com.dilas.ua.repository.StudentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
-
-import static java.util.Arrays.asList;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("students")
 public class StudentEndpoint {
 
-    @RequestMapping(method = RequestMethod.GET)
+    private final StudentRepository dao;
+
+    @Autowired
+    public StudentEndpoint(StudentRepository dao) {
+        this.dao = dao;
+    }
+
+    @GetMapping
     public ResponseEntity<?> getAll(){
-        return new ResponseEntity(Student.studentList, HttpStatus.OK);
+        return new ResponseEntity(dao.findAll(), HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/{id}")
-    public ResponseEntity<?> getStudentById(@PathVariable("id") int id){
-    Student student = new Student();
-    student.setId(id);
-    int index = Student.studentList.indexOf(student);
-    if(index == -1){//não achou
-
+    @GetMapping(path = "/{id}")
+    public ResponseEntity<?> getStudentById(@PathVariable("id") Long id){
+    Student student = dao.findById(id).get();
+    if(student == null){//não achou
+        return new ResponseEntity<>(new CustomErrorType("no student found"), HttpStatus.NOT_FOUND);
     }
+    return new ResponseEntity<>(student, HttpStatus.OK);
+    }
+
+    @PostMapping
+    public ResponseEntity<?> save(@RequestBody Student student){
+        dao.save(student);
+        return new ResponseEntity(student, HttpStatus.OK);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> delete(@RequestBody Student student){
+        dao.delete(student);
+        return new ResponseEntity(HttpStatus.OK);
+    }
+    @PutMapping
+    public ResponseEntity<?> update(@RequestBody Student student){
+        dao.save(student);
+        return new ResponseEntity(HttpStatus.OK);
     }
 }
