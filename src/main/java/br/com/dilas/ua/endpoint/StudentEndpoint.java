@@ -5,6 +5,7 @@ import br.com.dilas.ua.error.ResourceNotFoundException;
 import br.com.dilas.ua.model.Student;
 import br.com.dilas.ua.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,9 +24,16 @@ public class StudentEndpoint {
         this.dao = dao;
     }
 
+    //com essa paginação da pra acessar cada parte do request da seguinte forma:
+    //http://localhost:8080/students?page=0 | http://localhost:8080/students?page=1 | etc
+    //é possível setar a quantidade de itens que vc quer assim:
+    // http://localhost:8080/students?page=0&size=5
+
+    //para ordenar:
+    // http://localhost:8080/students?sort=name,asc | http://localhost:8080/students?sort=name,desc
     @GetMapping
-    public ResponseEntity<?> getAll(){
-        return new ResponseEntity(dao.findAll(), HttpStatus.OK);
+    public ResponseEntity<?> getAll(Pageable pageable){
+        return new ResponseEntity(dao.findAll(pageable), HttpStatus.OK);
     }
 
     @GetMapping(path = "/{id}")
